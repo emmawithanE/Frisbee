@@ -4,6 +4,7 @@ const MIN_SPEED = 200
 const MAX_SPEED = 800
 
 var vel = Vector2()
+var colour = 1
 
 # Called when the node enters the scene tree for the first time.
 func _ready():

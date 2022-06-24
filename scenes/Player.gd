@@ -1,5 +1,7 @@
 extends KinematicBody2D
 
+var colour = 2
+
 var vel = Vector2()
 const MAX_SPD = 100
 const GRAV = 20
@@ -37,6 +39,7 @@ func _physics_process(_delta):
 			ShootingStates.Ready:
 				# print("Click!")
 				var shot_instance = bullet.instance()
+				shot_instance.colour = colour
 				shot_instance.position = $Pointing/End.global_position
 				shot_instance.rotation = $Pointing.rotation
 				get_parent().add_child(shot_instance)
