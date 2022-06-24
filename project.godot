@@ -18,6 +18,11 @@ config/name="Frisbee"
 run/main_scene="res://scenes/World.tscn"
 config/icon="res://icon.png"
 
+[autoload]
+
+Globals="*res://scripts/globals.gd"
+Signals="*res://scripts/signals.gd"
+
 [display]
 
 window/size/width=640
@@ -88,8 +93,8 @@ click={
 
 [rendering]
 
-quality/intended_usage/framebuffer_allocation=1
-quality/intended_usage/framebuffer_allocation.mobile=1
+quality/intended_usage/framebuffer_allocation=0
+quality/intended_usage/framebuffer_allocation.mobile=0
 2d/snapping/use_gpu_pixel_snap=true
 environment/default_environment="res://default_env.tres"
 quality/2d/use_pixel_snap=true
