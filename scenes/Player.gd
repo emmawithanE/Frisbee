@@ -68,8 +68,6 @@ func _physics_process(delta):
 			_:
 				assert(false, "unhandled shooting state " + str(shooting_state))
 
-	vel.y += GRAV
-
 	vel.x -= sign(vel.x) * min(abs(vel.x), 25)
 	if Input.is_action_pressed("ui_right"):
 		if vel.x < MAX_SPD:
@@ -108,8 +106,6 @@ func _physics_process(delta):
 			gravity = 0
 	
 	vel.y += gravity
-
-	vel = move_and_slide(vel,UP)
 
 	var dv = Vector2(0, 0)
 	var new_vel = move_and_slide(vel,UP)
