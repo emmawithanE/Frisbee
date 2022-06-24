@@ -31,7 +31,11 @@ __meta__ = {
 [node name="End" type="Position2D" parent="Pointing"]
 position = Vector2( 16, 0 )
 
-[node name="Timer" type="Timer" parent="."]
+[node name="GrabTimer" type="Timer" parent="."]
 one_shot = true
 
-[connection signal="timeout" from="Timer" to="." method="timeout"]
+[node name="DashTimer" type="Timer" parent="."]
+one_shot = true
+
+[connection signal="timeout" from="GrabTimer" to="." method="grab_timeout"]
+[connection signal="timeout" from="DashTimer" to="." method="dash_timeout"]
