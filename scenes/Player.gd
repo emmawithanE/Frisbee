@@ -76,6 +76,7 @@ func _physics_process(_delta):
 	vel = move_and_slide(vel,UP)
 
 func timeout():
+	print("timeout")
 	match shooting_state:
 		ShootingStates.Grabbing:
 			shooting_state = ShootingStates.GrabBackswing

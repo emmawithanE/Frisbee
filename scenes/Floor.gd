@@ -11,6 +11,6 @@ func _ready():
 	pass # Replace with function body.
 
 func ball_collision(ball, collision):
-	set_cellv(collision.get_collider().world_to_map(collision.get_position() - collision.get_normal()), -1)
+	set_cellv(collision.get_collider().world_to_map(collision.get_position() - collision.get_normal()), 0)
 	ball.vel = ball.vel.bounce(collision.get_normal())
 	ball.increase_speed()
