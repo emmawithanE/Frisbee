@@ -6,6 +6,12 @@ const GRAV = 20
 const JUMP = 600
 const UP = Vector2(0,-1)
 
+enum ShootingStates {
+	Empty, Ready, Grabbing, GrabBackswing
+}
+var shooting_state = ShootingStates.Ready # start with a bullet
+const GRAB_LENGTH = 0.5
+const GRAB_BACKSWING_LENGTH = 0.5
 # Get bullet resource from outside
 export (PackedScene) var bullet
 
@@ -17,7 +23,6 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _physics_process(_delta):
-	
 	$Pointing.look_at(get_global_mouse_position())
 	
 	var pointdir = fposmod($Pointing.rotation_degrees, 360)
@@ -28,13 +33,26 @@ func _physics_process(_delta):
 		$Sprite.flip_h = false
 	
 	if Input.is_action_just_pressed("click"):
-		# print("Click!")
-		var shot_instance = bullet.instance()
-		shot_instance.position = $Pointing/End.global_position
-		shot_instance.rotation = $Pointing.rotation
-		get_parent().add_child(shot_instance)
-		# print("Shot fired.")
-	
+		match shooting_state:
+			ShootingStates.Ready:
+				# print("Click!")
+				var shot_instance = bullet.instance()
+				shot_instance.position = $Pointing/End.global_position
+				shot_instance.rotation = $Pointing.rotation
+				get_parent().add_child(shot_instance)
+				# print("Shot fired.")
+				shooting_state = ShootingStates.Empty
+			ShootingStates.Empty:
+				$Timer.start(GRAB_LENGTH)
+				shooting_state = ShootingStates.Grabbing
+				print("setting ss to grabbing")
+			ShootingStates.Grabbing:
+				pass
+			ShootingStates.GrabBackswing:
+				pass
+			_:
+				assert(false, "unhandled shooting state " + str(shooting_state))
+
 	vel.y += GRAV
 	
 #	if Input.is_action_pressed("ui_right"):
@@ -56,9 +74,23 @@ func _physics_process(_delta):
 			vel.y = -JUMP
 	
 	vel = move_and_slide(vel,UP)
-	
-	pass
+
+func timeout():
+	match shooting_state:
+		ShootingStates.Grabbing:
+			shooting_state = ShootingStates.GrabBackswing
+			$Timer.start(GRAB_BACKSWING_LENGTH)
+			print("setting ss to backswing")
+		ShootingStates.GrabBackswing:
+			print("setting ss to empty")
+			shooting_state = ShootingStates.Empty
+		_:
+			assert(false, "shooting state=" + str(shooting_state) + " when timer ended")
 
 func ball_collision(ball, collision):
-	# die
-	pass
+	print("ball collision")
+	print("ss == " + str(shooting_state))
+	if shooting_state == ShootingStates.Grabbing:
+		ball.die()
+		shooting_state = ShootingStates.Ready
+		$Timer.stop()

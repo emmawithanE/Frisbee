@@ -30,3 +30,5 @@ __meta__ = {
 
 [node name="End" type="Position2D" parent="Pointing"]
 position = Vector2( 16, 0 )
+
+[node name="Timer" type="Timer" parent="."]
