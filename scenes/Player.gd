@@ -67,13 +67,16 @@ func _physics_process(delta):
 				pass
 			_:
 				assert(false, "unhandled shooting state " + str(shooting_state))
-	
-	# Side to side movement	
-	vel.x = 0
+
+	vel.y += GRAV
+
+	vel.x -= sign(vel.x) * min(abs(vel.x), 25)
 	if Input.is_action_pressed("ui_right"):
-		vel.x += MAX_SPD
+		if vel.x < MAX_SPD:
+			vel.x += MAX_SPD
 	if Input.is_action_pressed("ui_left"):
-		vel.x -= MAX_SPD
+		if vel.x > -MAX_SPD:
+			vel.x -= MAX_SPD
 	
 	# Here there be jumping
 	if is_on_floor():
@@ -108,6 +111,17 @@ func _physics_process(delta):
 
 	vel = move_and_slide(vel,UP)
 
+	var dv = Vector2(0, 0)
+	var new_vel = move_and_slide(vel,UP)
+	for i in range(get_slide_count()):
+		var collision = get_slide_collision(i)
+		if (collision.get_collider().has_method("bouncy")):
+			if collision.get_collider().bouncy(self, collision):
+				var s = -sign(vel.dot(collision.normal))
+				dv = (vel + Vector2(800, 800)) * collision.normal * s
+
+	vel = new_vel + dv
+	
 func grab_timeout():
 	print("timeout")
 	match shooting_state:
