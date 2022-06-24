@@ -18,6 +18,7 @@ func _physics_process(delta):
 	if collision:
 		if (collision.get_collider().has_method("ball_collision")):
 			collision.get_collider().ball_collision(self, collision)
+		look_at(global_position + vel)
 
 func increase_speed():
 	var v = vel.length()
