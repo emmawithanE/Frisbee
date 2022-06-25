@@ -67,24 +67,34 @@ func _physics_process(delta):
 				pass
 			_:
 				assert(false, "unhandled shooting state " + str(shooting_state))
-
-	vel.x -= sign(vel.x) * min(abs(vel.x), 25)
-	if Input.is_action_pressed("ui_right"):
-		if vel.x < MAX_SPD:
-			vel.x += MAX_SPD
-	if Input.is_action_pressed("ui_left"):
-		if vel.x > -MAX_SPD:
-			vel.x -= MAX_SPD
 	
 	# Here there be jumping
 	if is_on_floor():
 		if Input.is_action_just_pressed("ui_up"):
 			vel.y = -JUMP
-	
+		vel.x /= 2 # hard clamp
+		if abs(vel.x) < 1:
+			vel.x = 0 # floating point
+	else:
+		# gentle clamp
+		vel.x -= sign(vel.x) * min(abs(vel.x), 15)
+
+	var left = Input.is_action_pressed("ui_left")
+	var right = Input.is_action_pressed("ui_right")
+	if left != right:
+		var dv = Vector2(-MAX_SPD*int(left) + MAX_SPD*int(right), 0)
+		if abs(dv.x) > abs(vel.x) && dv.x*vel.x >= 0:
+			print("adding to vel " + str(vel.x))
+			vel += dv
+		else:
+			print("not adding to vel " + str(vel.x))
+			var bounce = slide_with_bounce(dv)
+			vel += bounce[1]
+
 	# Handle dashing
 	if (Input.is_action_just_pressed("dash") && dash_state == DashState.Ready):
 		dash_state = DashState.ChargingDash
-	
+		vel = Vector2(0, 0)
 	if (dash_state == DashState.ChargingDash):
 		dash_charge += delta
 	
@@ -92,13 +102,14 @@ func _physics_process(delta):
 		dash_state = DashState.Dash
 		$DashTimer.start(min(MAX_DASH, dash_charge * DASH_SCALE))
 		vel = get_local_mouse_position().normalized() * DASH_SPEED
+
 	# Gravity time
 	var gravity = 0
 	if (vel.y <= JUMP_PEAK && vel.y >= -JUMP_PEAK):
 		gravity += GRAV/2
 	else:
 		gravity += GRAV
-		
+	
 	match dash_state:
 		DashState.ChargingDash:
 			gravity = min(gravity, CHARGING_FALL_RATE)
@@ -107,6 +118,10 @@ func _physics_process(delta):
 	
 	vel.y += gravity
 
+	var bounce = slide_with_bounce(vel)
+	vel = bounce[0] + bounce[1]
+
+func slide_with_bounce(vel):
 	var dv = Vector2(0, 0)
 	var new_vel = move_and_slide(vel,UP)
 	for i in range(get_slide_count()):
@@ -115,9 +130,8 @@ func _physics_process(delta):
 			if collision.get_collider().bouncy(self, collision):
 				var s = -sign(vel.dot(collision.normal))
 				dv = (vel + Vector2(800, 800)) * collision.normal * s
+	return [new_vel, dv]
 
-	vel = new_vel + dv
-	
 func grab_timeout():
 	print("timeout")
 	match shooting_state:
