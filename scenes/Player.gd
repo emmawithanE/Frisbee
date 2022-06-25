@@ -3,12 +3,12 @@ extends KinematicBody2D
 export var colour = 1
 
 var vel = Vector2()
-const MAX_SPD = 100
+const MAX_SPD = 150
 const GRAV = 10
 const JUMP = 300
+const MAX_FALL_SPEED = 300
 const JUMP_PEAK = 45
 const UP = Vector2(0,-1)
-
 
 enum ShootingStates {
 	Empty, Ready, Grabbing, GrabBackswing
@@ -30,6 +30,9 @@ const DASH_BACKSWING_LENGTH = 0.5
 const CHARGING_FALL_RATE = 0.5
 const DASH_SPEED = 800
 
+var on_floor = false
+var bounced = false
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	pass # Replace with function body.
@@ -44,6 +47,7 @@ func aim_vector():
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _physics_process(delta):
+	# Fun with sprites
 	$Pointing.set_rotation(aim_vector().angle())
 	
 	var pointdir = fposmod($Pointing.rotation_degrees, 360)
@@ -52,7 +56,19 @@ func _physics_process(delta):
 		$Sprite.flip_h = true
 	else:
 		$Sprite.flip_h = false
-	
+
+	match dash_state:
+		DashState.ChargingDash:
+			$Sprite.set_frame_coords(Vector2(2, colour - 1))
+		DashState.Dash:
+			$Sprite.set_frame_coords(Vector2(3, colour - 1))
+			$Sprite.rotation = vel.angle() - PI/2
+		_:
+			if is_on_floor():
+				$Sprite.set_frame_coords(Vector2(0, colour - 1))
+			else:
+				$Sprite.set_frame_coords(Vector2(1, colour - 1))
+
 	if Input.is_action_just_pressed("click"):
 		match shooting_state:
 			ShootingStates.Ready:
@@ -74,100 +90,76 @@ func _physics_process(delta):
 				pass
 			_:
 				assert(false, "unhandled shooting state " + str(shooting_state))
-	
-	# Here there be jumping
 
-
-
-	if dash_state == DashState.ChargingDash || dash_state == DashState.Dash:
-		pass
+	# friction
+	if on_floor:
+		vel.x /= 2 # hard clamp
+		if abs(vel.x) < 1:
+			vel.x = 0 # floating point
 	else:
-		# jumping and x clamping
-		if is_on_floor():
-			if Input.is_action_just_pressed("ui_jump"):
-				vel.y = -JUMP
-			vel.x /= 2 # hard clamp
-			if abs(vel.x) < 1:
-				vel.x = 0 # floating point
-		else:
-			# gentle clamp
-			vel.x -= sign(vel.x) * min(abs(vel.x), 15)
+		# gentle clamp
+		vel.x -= vel.x*vel.x*sign(vel.x)*0.01*delta
+		vel.x -= sign(vel.x)*min(abs(vel.x), 15)
+	if bounced:
+		vel.y -= vel.y*vel.y*sign(vel.y)*0.01*delta
+	# jumping
+	if on_floor:
+		if Input.is_action_just_pressed("ui_jump"):
+			vel.y = -JUMP
 
-		# movement
-		var left = Input.is_action_pressed("ui_left")
-		var right = Input.is_action_pressed("ui_right")
-		if left != right:
-			var dv = Vector2(-MAX_SPD*int(left) + MAX_SPD*int(right), 0)
-			if abs(dv.x) > abs(vel.x) && dv.x*vel.x >= 0:
-				vel += dv
+	# movement
+
+	var left = Input.is_action_pressed("ui_left")
+	var right = Input.is_action_pressed("ui_right")
+	if left != right:
+		if dash_state != DashState.ChargingDash:
+			var dx = -MAX_SPD*int(left) + MAX_SPD*int(right)
+			if abs(vel.x) > MAX_SPD :
+				vel.x += dx*delta
 			else:
-				var bounce = slide_with_bounce(dv, delta)
-				vel += bounce[1]
+				vel.x = dx
 
-	# Handle dashing
-	if (Input.is_action_just_pressed("dash") && dash_state == DashState.Ready):
-		dash_state = DashState.ChargingDash
-		vel = Vector2(0, 0)
-	if (dash_state == DashState.ChargingDash):
-		dash_charge += delta
-
-	if (Input.is_action_just_released("dash") && dash_state == DashState.ChargingDash):
-		print("dash: " + str(dash_charge))
-		dash_state = DashState.Dash
-		$DashTimer.start(min(MAX_DASH, dash_charge * DASH_SCALE))
-		vel = aim_vector() * DASH_SPEED
-
-	# Gravity time
-	var gravity = 0
-	if (vel.y <= JUMP_PEAK && vel.y >= -JUMP_PEAK):
-		gravity += GRAV/2
-	else:
-		gravity += GRAV
-
+	var gravity = GRAV
+	
 	match dash_state:
+		DashState.Ready:
+			if Input.is_action_just_pressed("dash"):
+				dash_state = DashState.ChargingDash
+				vel = Vector2(0, 0)
 		DashState.ChargingDash:
-			gravity = min(gravity, CHARGING_FALL_RATE)
+			vel.y = CHARGING_FALL_RATE
+			dash_charge += delta
+			if Input.is_action_just_released("dash"):
+				dash_state = DashState.Dash
+				$DashTimer.start(min(MAX_DASH, dash_charge * DASH_SCALE))
+				vel = aim_vector() * DASH_SPEED
 		DashState.Dash:
-			if vel.y != 0:
-				gravity = 0
-
+			gravity = 0
+			
+	# Gravity time
 	vel.y += gravity
 
-	print("applying main force " + str(vel))
-	var bounce = slide_with_bounce(vel, delta)
-	vel = bounce[0] + bounce[1]
-	
-	
-	
-	# Fun with sprites
-	match dash_state:
-		DashState.ChargingDash:
-			$Sprite.set_frame_coords(Vector2(2, colour - 1))
-		DashState.Dash:
-			$Sprite.set_frame_coords(Vector2(3, colour - 1))
-			$Sprite.rotation = vel.angle() - PI/2
-		_:
-			if is_on_floor():
-				$Sprite.set_frame_coords(Vector2(0, colour - 1))
-			else:
-				$Sprite.set_frame_coords(Vector2(1, colour - 1))
-
-func slide_with_bounce(vel, delta):
-	var dv = Vector2(0, 0)
-	var new_vel = vel
-	var coll = move_and_collide(vel * delta)
-	if coll:
-		new_vel += (new_vel*coll.normal).length()*coll.normal
-		new_vel /= 2
-		if (coll.get_collider().has_method("bouncy")):
-			if coll.get_collider().bouncy(self, coll):
-				var s = -sign(vel.dot(coll.normal))
-				dv = (vel + Vector2(400, 400)) * coll.normal * s
-			else:
+	var remaining_force = vel*delta
+	on_floor = false
+	while remaining_force.length():
+		var coll = move_and_collide(remaining_force)
+		if !coll:
+			break
+		else:
+			if coll.normal.y < 0:
+				on_floor = true
+				bounced = false
+			if coll.normal.y > 0:
 				if dash_state == DashState.Dash:
 					dash_state = DashState.NoDash
-
-	return [new_vel, dv]
+			remaining_force = coll.remainder
+			remaining_force += (remaining_force*coll.normal).length()*coll.normal
+			if (coll.collider.has_method("bouncy")) && coll.collider.bouncy(self, coll):
+				bounced = true
+				vel = vel.bounce(coll.normal) + coll.normal*Vector2(800, 800)
+				remaining_force += coll.normal*Vector2(800, 800)*delta
+			else:
+				vel += (vel*coll.normal).length()*coll.normal
 
 func grab_timeout():
 	print("timeout")
