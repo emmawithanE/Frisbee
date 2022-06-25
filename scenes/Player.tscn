@@ -2,7 +2,7 @@
 
 [ext_resource path="res://scenes/Player.gd" type="Script" id=1]
 [ext_resource path="res://sprites/players.png" type="Texture" id=2]
-[ext_resource path="res://sprites/RedLine.png" type="Texture" id=3]
+[ext_resource path="res://sprites/arm.png" type="Texture" id=3]
 [ext_resource path="res://scenes/Shot.tscn" type="PackedScene" id=4]
 
 [sub_resource type="RectangleShape2D" id=1]
@@ -24,14 +24,16 @@ vframes = 2
 shape = SubResource( 1 )
 
 [node name="Pointing" type="Sprite" parent="."]
-position = Vector2( 0, -4 )
+position = Vector2( -1, -2 )
 texture = ExtResource( 3 )
+hframes = 5
+vframes = 2
 __meta__ = {
 "_edit_group_": true
 }
 
 [node name="End" type="Position2D" parent="Pointing"]
-position = Vector2( 16, 0 )
+position = Vector2( 8, 0 )
 
 [node name="GrabTimer" type="Timer" parent="."]
 one_shot = true

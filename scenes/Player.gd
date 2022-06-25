@@ -68,28 +68,46 @@ func set_shot_exception(shot):
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _physics_process(delta):
+	
 	# Fun with sprites
-	$Pointing.set_rotation(aim_vector().angle())
-	
-	var pointdir = fposmod($Pointing.rotation_degrees, 360)
-	
-	if pointdir > 90 && pointdir <= 270:
+	var point = aim_vector().angle()
+	print(float(point / PI))
+	if point > PI/2 || point < -PI/2:
+		print("flipping h, set rotation at angle " + str((PI - point)/PI))
 		$Sprite.flip_h = true
+		$Pointing.flip_h = true
+		$Pointing.set_rotation(point - PI)
+		$Pointing.set_position(Vector2(1,-2))
 	else:
 		$Sprite.flip_h = false
+		$Pointing.flip_h = false
+		$Pointing.set_rotation(point)
+		$Pointing.set_position(Vector2(-1,-2))
+		
+	match shooting_state:
+		ShootingStates.Ready:
+			$Pointing.set_frame_coords(Vector2(1 + 3 * int(!on_floor), colour - 1))
+		ShootingStates.Grabbing:
+			$Pointing.set_frame_coords(Vector2(2, colour - 1))
+		_:
+			$Pointing.set_frame_coords(Vector2(0  + 3 * int(!on_floor), colour - 1))
 
+	$Pointing.set_visible(true)
 	match dash_state:
 		DashState.ChargingDash:
 			$Sprite.set_frame_coords(Vector2(2, colour - 1))
+			$Pointing.set_visible(false)
 		DashState.Dash:
 			$Sprite.set_frame_coords(Vector2(3, colour - 1))
 			$Sprite.rotation = vel.angle() - PI/2
+			$Pointing.set_visible(false)
 		_:
 			if on_floor:
 				$Sprite.set_frame_coords(Vector2(0, colour - 1))
 			else:
 				$Sprite.set_frame_coords(Vector2(1, colour - 1))
 
+	# Throw or catch a ball
 	if Input.is_action_just_pressed(UI_CLICK):
 		match shooting_state:
 			ShootingStates.Ready:
@@ -97,8 +115,8 @@ func _physics_process(delta):
 				var shot_instance = bullet.instance()
 				shot_instance.set_colour(colour)
 				shot_instance.position = $Pointing/End.global_position
-				shot_instance.rotation = $Pointing.rotation
 				set_shot_exception(shot_instance)
+				shot_instance.rotation = aim_vector().angle()
 				get_parent().add_child(shot_instance)
 				# print("Shot fired.")
 				shooting_state = ShootingStates.Empty
@@ -128,8 +146,8 @@ func _physics_process(delta):
 	if on_floor:
 		if Input.is_action_just_pressed(UI_JUMP):
 			vel.y = -JUMP
+	
 	# movement
-
 	var left = Input.is_action_pressed(UI_LEFT)
 	var right = Input.is_action_pressed(UI_RIGHT)
 	if left != right:
@@ -160,7 +178,6 @@ func _physics_process(delta):
 			
 	# Gravity time
 	vel.y += gravity
-
 	var remaining_force = vel*delta
 	on_floor = false
 	for _i in range(4):
@@ -194,6 +211,7 @@ func _physics_process(delta):
 					var dv = (vel*coll.normal).length()*coll.normal
 					vel += dv
 
+
 func grab_timeout():
 	print("timeout")
 	match shooting_state:
@@ -222,7 +240,7 @@ func dash_timeout():
 		_:
 			assert(false, "dash state=" + str(dash_state) + " when timer ended")
 
-func ball_collision(ball, collision):
+func ball_collision(ball, _collision):
 	print("ball collision")
 	print("ss == " + str(shooting_state))
 	print("ds == " + str(dash_state))
