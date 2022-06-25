@@ -28,7 +28,7 @@ const DASH_SCALE = 0.5 # Dash length (s) = charge time * scale
 const MAX_DASH = 1 # Max dash length (s)
 const DASH_BACKSWING_LENGTH = 0.5
 const CHARGING_FALL_RATE = 0.5
-const DASH_SPEED = 800
+const DASH_SPEED = 1000
 
 var on_floor = false
 var bounced = false
@@ -146,6 +146,7 @@ func _physics_process(delta):
 		DashState.Ready:
 			if Input.is_action_just_pressed(UI_DASH):
 				dash_state = DashState.ChargingDash
+				dash_charge = 0
 				vel = Vector2(0, 0)
 		DashState.ChargingDash:
 			vel.y = CHARGING_FALL_RATE
@@ -204,6 +205,7 @@ func grab_timeout():
 			assert(false, "shooting state=" + str(shooting_state) + " when timer ended")
 
 func end_dash():
+	vel = Vector2(0, 0)
 	$DashTimer.stop()
 	dash_state = DashState.NoDash
 	$Sprite.set_frame_coords(Vector2(1, colour - 1))
@@ -227,4 +229,6 @@ func ball_collision(ball, collision):
 		$GrabTimer.stop()
 		return
 	if dash_state == DashState.Dash:
-		ball.add_vel(vel)
+		ball.add_vel(vel * 0.6)
+		ball.colour = colour
+		ball.update_sprite()
