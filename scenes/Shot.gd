@@ -26,6 +26,9 @@ func increase_speed():
 	var new_v = min(MAX_SPEED, v + sqrt(v))
 	vel = vel.normalized() * new_v
 	Signals.emit_signal("speed_changed", get_instance_id(), new_v)
+	var new_col = Vector2(colour, int(new_v > MAX_SPEED * 0.9))
+	print(str(new_col))
+	$Sprite.set_frame_coords(new_col)
 	
 func die():
 	queue_free()
