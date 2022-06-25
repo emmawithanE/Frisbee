@@ -59,6 +59,12 @@ func aim_vector():
 	if aim:
 		last_aim = aim
 	return last_aim
+
+func set_shot_exception(shot):
+	shot.add_collision_exception_with(self)
+	yield(get_tree().create_timer(0.5), "timeout")
+	if is_instance_valid(shot):
+		shot.remove_collision_exception_with(self)
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _physics_process(delta):
@@ -92,6 +98,7 @@ func _physics_process(delta):
 				shot_instance.set_colour(colour)
 				shot_instance.position = $Pointing/End.global_position
 				shot_instance.rotation = $Pointing.rotation
+				set_shot_exception(shot_instance)
 				get_parent().add_child(shot_instance)
 				# print("Shot fired.")
 				shooting_state = ShootingStates.Empty
@@ -152,15 +159,12 @@ func _physics_process(delta):
 			
 	# Gravity time
 	vel.y += gravity
-	print("1 " + str(colour) + " " + str(vel))
-	assert(vel.x == vel.x)
+
 	var remaining_force = vel*delta
 	on_floor = false
 	for _i in range(4):
 		if !remaining_force.length():
 			break
-		print("2 " + str(colour) + " " + str(remaining_force))
-		assert(vel.x == vel.x)
 		var coll = move_and_collide(remaining_force)
 		if !coll:
 			break
@@ -179,8 +183,6 @@ func _physics_process(delta):
 				remaining_force += coll.normal*Vector2(800, 800)*delta
 			else:
 				vel += (vel*coll.normal).length()*coll.normal
-	print("3 " + str(colour) + " " + str(vel))
-	assert(vel.x == vel.x)
 
 func grab_timeout():
 	print("timeout")
