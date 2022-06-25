@@ -33,14 +33,29 @@ const DASH_SPEED = 800
 var on_floor = false
 var bounced = false
 
+var UI_LEFT = "ui_left"
+var UI_RIGHT = "ui_right"
+var UI_UP = "ui_up"
+var UI_DOWN = "ui_down"
+var UI_CLICK = "click"
+var UI_JUMP = "jump"
+var UI_DASH = "dash"
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	if colour != 1:
+		UI_LEFT += "_p2"
+		UI_RIGHT += "_p2"
+		UI_UP += "_p2"
+		UI_DOWN += "_p2"
+		UI_CLICK += "_p2"
+		UI_JUMP += "_p2"
+		UI_DASH += "_p2"
 
 var last_aim = Vector2(1, 0)
 func aim_vector():
 	#var aim = Input.get_vector("aim_left", "aim_right", "aim_up", "aim_down")
-	var aim = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+	var aim = Input.get_vector(UI_LEFT, UI_RIGHT, UI_UP, UI_DOWN)
 	if aim:
 		last_aim = aim
 	return last_aim
@@ -69,7 +84,7 @@ func _physics_process(delta):
 			else:
 				$Sprite.set_frame_coords(Vector2(1, colour - 1))
 
-	if Input.is_action_just_pressed("click"):
+	if Input.is_action_just_pressed(UI_CLICK):
 		match shooting_state:
 			ShootingStates.Ready:
 				# print("Click!")
@@ -104,13 +119,12 @@ func _physics_process(delta):
 		vel.y -= vel.y*vel.y*sign(vel.y)*0.01*delta
 	# jumping
 	if on_floor:
-		if Input.is_action_just_pressed("ui_jump"):
+		if Input.is_action_just_pressed(UI_JUMP):
 			vel.y = -JUMP
-
 	# movement
 
-	var left = Input.is_action_pressed("ui_left")
-	var right = Input.is_action_pressed("ui_right")
+	var left = Input.is_action_pressed(UI_LEFT)
+	var right = Input.is_action_pressed(UI_RIGHT)
 	if left != right:
 		if dash_state != DashState.ChargingDash:
 			var dx = -MAX_SPD*int(left) + MAX_SPD*int(right)
@@ -123,13 +137,13 @@ func _physics_process(delta):
 	
 	match dash_state:
 		DashState.Ready:
-			if Input.is_action_just_pressed("dash"):
+			if Input.is_action_just_pressed(UI_DASH):
 				dash_state = DashState.ChargingDash
 				vel = Vector2(0, 0)
 		DashState.ChargingDash:
 			vel.y = CHARGING_FALL_RATE
 			dash_charge += delta
-			if Input.is_action_just_released("dash"):
+			if Input.is_action_just_released(UI_DASH):
 				dash_state = DashState.Dash
 				$DashTimer.start(min(MAX_DASH, dash_charge * DASH_SCALE))
 				vel = aim_vector() * DASH_SPEED
@@ -138,10 +152,15 @@ func _physics_process(delta):
 			
 	# Gravity time
 	vel.y += gravity
-
+	print("1 " + str(colour) + " " + str(vel))
+	assert(vel.x == vel.x)
 	var remaining_force = vel*delta
 	on_floor = false
-	while remaining_force.length():
+	for _i in range(4):
+		if !remaining_force.length():
+			break
+		print("2 " + str(colour) + " " + str(remaining_force))
+		assert(vel.x == vel.x)
 		var coll = move_and_collide(remaining_force)
 		if !coll:
 			break
@@ -160,6 +179,8 @@ func _physics_process(delta):
 				remaining_force += coll.normal*Vector2(800, 800)*delta
 			else:
 				vel += (vel*coll.normal).length()*coll.normal
+	print("3 " + str(colour) + " " + str(vel))
+	assert(vel.x == vel.x)
 
 func grab_timeout():
 	print("timeout")
