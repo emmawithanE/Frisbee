@@ -172,9 +172,9 @@ func _physics_process(delta):
 			if coll.normal.y < 0:
 				on_floor = true
 				bounced = false
-			if coll.normal.y > 0:
-				if dash_state == DashState.Dash:
-					end_dash()
+				if dash_state == DashState.NoDash:
+					dash_state = DashState.Ready
+
 			remaining_force = coll.remainder
 			remaining_force += (remaining_force*coll.normal).length()*coll.normal
 			if (coll.collider.has_method("bouncy")) && coll.collider.bouncy(self, coll):
@@ -182,7 +182,11 @@ func _physics_process(delta):
 				vel = vel.bounce(coll.normal) + coll.normal*Vector2(800, 800)
 				remaining_force += coll.normal*Vector2(800, 800)*delta
 			else:
-				vel += (vel*coll.normal).length()*coll.normal
+				var dv = (vel*coll.normal).length()*coll.normal
+				if dv.length() > vel.length() / 2:
+					if dash_state == DashState.Dash:
+						end_dash()
+				vel += dv
 
 func grab_timeout():
 	print("timeout")
@@ -198,18 +202,16 @@ func grab_timeout():
 			assert(false, "shooting state=" + str(shooting_state) + " when timer ended")
 
 func end_dash():
+	$DashTimer.stop()
 	dash_state = DashState.NoDash
 	$Sprite.set_frame_coords(Vector2(1, colour - 1))
 	$Sprite.rotation = 0
-	$DashTimer.start(DASH_BACKSWING_LENGTH)
 	print("setting dash to backswing")
+
 func dash_timeout():
 	match dash_state:
 		DashState.Dash:
 			end_dash()
-		DashState.NoDash:
-			print("setting dash to ready")
-			dash_state = DashState.Ready
 		_:
 			assert(false, "dash state=" + str(dash_state) + " when timer ended")
 
