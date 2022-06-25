@@ -179,17 +179,20 @@ func _physics_process(delta):
 			remaining_force = coll.remainder
 			remaining_force += (remaining_force*coll.normal).length()*coll.normal
 			if (coll.collider.has_method("bouncy")) && coll.collider.bouncy(self, coll):
+				print("bounce")
 				bounced = true
 				vel = vel.bounce(coll.normal) + coll.normal*Vector2(800, 800)
 				remaining_force += coll.normal*Vector2(800, 800)*delta
-			if coll.collider.has_method("rigid") && coll.collider.rigid(self, coll):
+			elif coll.collider.has_method("rigid") && coll.collider.rigid(self, coll):
 				pass
 			else:
-				var dv = (vel*coll.normal).length()*coll.normal
-				if dv.length() > vel.length() / 2:
-					if dash_state == DashState.Dash:
-						end_dash()
-				vel += dv
+				#if dv.length() > vel.length() / 2:
+				if dash_state == DashState.Dash:
+					vel = vel.bounce(coll.normal) * 0.2
+					end_dash()
+				else:
+					var dv = (vel*coll.normal).length()*coll.normal
+					vel += dv
 
 func grab_timeout():
 	print("timeout")
@@ -205,7 +208,6 @@ func grab_timeout():
 			assert(false, "shooting state=" + str(shooting_state) + " when timer ended")
 
 func end_dash():
-	vel = Vector2(0, 0)
 	$DashTimer.stop()
 	dash_state = DashState.NoDash
 	$Sprite.set_frame_coords(Vector2(1, colour - 1))
@@ -215,6 +217,7 @@ func end_dash():
 func dash_timeout():
 	match dash_state:
 		DashState.Dash:
+			vel = vel.normalized() * max(vel.length() - DASH_SPEED+200, MAX_SPD)
 			end_dash()
 		_:
 			assert(false, "dash state=" + str(dash_state) + " when timer ended")
