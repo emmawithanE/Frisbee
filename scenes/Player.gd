@@ -181,6 +181,8 @@ func _physics_process(delta):
 				bounced = true
 				vel = vel.bounce(coll.normal) + coll.normal*Vector2(800, 800)
 				remaining_force += coll.normal*Vector2(800, 800)*delta
+			if coll.collider.has_method("rigid") && coll.collider.rigid(self, coll):
+				pass
 			else:
 				var dv = (vel*coll.normal).length()*coll.normal
 				if dv.length() > vel.length() / 2:
@@ -218,7 +220,11 @@ func dash_timeout():
 func ball_collision(ball, collision):
 	print("ball collision")
 	print("ss == " + str(shooting_state))
+	print("ds == " + str(dash_state))
 	if shooting_state == ShootingStates.Grabbing:
 		ball.die()
 		shooting_state = ShootingStates.Ready
 		$GrabTimer.stop()
+		return
+	if dash_state == DashState.Dash:
+		ball.add_vel(vel)
