@@ -28,7 +28,7 @@ const DASH_SCALE = 0.5 # Dash length (s) = charge time * scale
 const MAX_DASH = 1 # Max dash length (s)
 const DASH_BACKSWING_LENGTH = 0.5
 const CHARGING_FALL_RATE = 0.5
-const DASH_SPEED = 400
+const DASH_SPEED = 800
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -73,25 +73,33 @@ func _physics_process(delta):
 				assert(false, "unhandled shooting state " + str(shooting_state))
 	
 	# Here there be jumping
-	if is_on_floor():
-		if Input.is_action_just_pressed("ui_jump"):
-			vel.y = -JUMP
-		vel.x /= 2 # hard clamp
-		if abs(vel.x) < 1:
-			vel.x = 0 # floating point
-	else:
-		# gentle clamp
-		vel.x -= sign(vel.x) * min(abs(vel.x), 15)
 
-	var left = Input.is_action_pressed("ui_left")
-	var right = Input.is_action_pressed("ui_right")
-	if left != right:
-		var dv = Vector2(-MAX_SPD*int(left) + MAX_SPD*int(right), 0)
-		if abs(dv.x) > abs(vel.x) && dv.x*vel.x >= 0:
-			vel += dv
+
+
+	if dash_state == DashState.ChargingDash || dash_state == DashState.Dash:
+		pass
+	else:
+		# jumping and x clamping
+		if is_on_floor():
+			if Input.is_action_just_pressed("ui_jump"):
+				vel.y = -JUMP
+			vel.x /= 2 # hard clamp
+			if abs(vel.x) < 1:
+				vel.x = 0 # floating point
 		else:
-			var bounce = slide_with_bounce(dv)
-			vel += bounce[1]
+			# gentle clamp
+			vel.x -= sign(vel.x) * min(abs(vel.x), 15)
+
+		# movement
+		var left = Input.is_action_pressed("ui_left")
+		var right = Input.is_action_pressed("ui_right")
+		if left != right:
+			var dv = Vector2(-MAX_SPD*int(left) + MAX_SPD*int(right), 0)
+			if abs(dv.x) > abs(vel.x) && dv.x*vel.x >= 0:
+				vel += dv
+			else:
+				var bounce = slide_with_bounce(dv, delta)
+				vel += bounce[1]
 
 	# Handle dashing
 	if (Input.is_action_just_pressed("dash") && dash_state == DashState.Ready):
@@ -99,8 +107,9 @@ func _physics_process(delta):
 		vel = Vector2(0, 0)
 	if (dash_state == DashState.ChargingDash):
 		dash_charge += delta
-	
+
 	if (Input.is_action_just_released("dash") && dash_state == DashState.ChargingDash):
+		print("dash: " + str(dash_charge))
 		dash_state = DashState.Dash
 		$DashTimer.start(min(MAX_DASH, dash_charge * DASH_SCALE))
 		vel = aim_vector() * DASH_SPEED
@@ -111,27 +120,30 @@ func _physics_process(delta):
 		gravity += GRAV/2
 	else:
 		gravity += GRAV
-	
+
 	match dash_state:
 		DashState.ChargingDash:
 			gravity = min(gravity, CHARGING_FALL_RATE)
 		DashState.Dash:
-			gravity = 0
-	
+			if vel.y != 0:
+				gravity = 0
+
 	vel.y += gravity
 
-	var bounce = slide_with_bounce(vel)
+	var bounce = slide_with_bounce(vel, delta)
 	vel = bounce[0] + bounce[1]
 
-func slide_with_bounce(vel):
+func slide_with_bounce(vel, delta):
 	var dv = Vector2(0, 0)
-	var new_vel = move_and_slide(vel,UP)
-	for i in range(get_slide_count()):
-		var collision = get_slide_collision(i)
-		if (collision.get_collider().has_method("bouncy")):
-			if collision.get_collider().bouncy(self, collision):
-				var s = -sign(vel.dot(collision.normal))
-				dv = (vel + Vector2(400, 400)) * collision.normal * s
+	var new_vel = vel
+	var coll = move_and_collide(vel * delta)
+	if coll:
+		print("new vel " + str(new_vel) + str(coll.normal) + str(new_vel*coll.normal))
+		new_vel += (new_vel*coll.normal).length()*coll.normal
+		if (coll.get_collider().has_method("bouncy")):
+			if coll.get_collider().bouncy(self, coll):
+				var s = -sign(vel.dot(coll.normal))
+				dv = (vel + Vector2(400, 400)) * coll.normal * s
 	return [new_vel, dv]
 
 func grab_timeout():
