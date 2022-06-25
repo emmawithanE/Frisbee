@@ -133,6 +133,7 @@ func _physics_process(delta):
 
 	vel.y += gravity
 
+	print("applying main force " + str(vel))
 	var bounce = slide_with_bounce(vel, delta)
 	vel = bounce[0] + bounce[1]
 	
@@ -156,12 +157,16 @@ func slide_with_bounce(vel, delta):
 	var new_vel = vel
 	var coll = move_and_collide(vel * delta)
 	if coll:
-		print("new vel " + str(new_vel) + str(coll.normal) + str(new_vel*coll.normal))
 		new_vel += (new_vel*coll.normal).length()*coll.normal
+		new_vel /= 2
 		if (coll.get_collider().has_method("bouncy")):
 			if coll.get_collider().bouncy(self, coll):
 				var s = -sign(vel.dot(coll.normal))
 				dv = (vel + Vector2(400, 400)) * coll.normal * s
+			else:
+				if dash_state == DashState.Dash:
+					dash_state = DashState.NoDash
+
 	return [new_vel, dv]
 
 func grab_timeout():
