@@ -1,7 +1,7 @@
 extends KinematicBody2D
 
-const MIN_SPEED = 200
-const MAX_SPEED = 800
+const MIN_SPEED = 200.0
+const MAX_SPEED = 800.0
 
 var vel = Vector2()
 var colour = 1
@@ -23,7 +23,7 @@ func _physics_process(delta):
 
 func increase_speed():
 	var v = vel.length()
-	var new_v = min(MAX_SPEED, v + (MAX_SPEED-v)/4)
+	var new_v = min(MAX_SPEED, v + sqrt(v))
 	vel = vel.normalized() * new_v
 	Signals.emit_signal("speed_changed", get_instance_id(), new_v)
 	

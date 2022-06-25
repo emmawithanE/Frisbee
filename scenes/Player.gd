@@ -34,10 +34,14 @@ const DASH_SPEED = 400
 func _ready():
 	pass # Replace with function body.
 
-
+func aim_vector():
+	#var aim = Input.get_vector("aim_left", "aim_right", "aim_up", "aim_down")
+	var aim = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+	return aim
+	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _physics_process(delta):
-	$Pointing.look_at(get_global_mouse_position())
+	$Pointing.look_at($Pointing.global_position + aim_vector())
 	
 	var pointdir = fposmod($Pointing.rotation_degrees, 360)
 	
@@ -70,7 +74,7 @@ func _physics_process(delta):
 	
 	# Here there be jumping
 	if is_on_floor():
-		if Input.is_action_just_pressed("ui_up"):
+		if Input.is_action_just_pressed("ui_jump"):
 			vel.y = -JUMP
 		vel.x /= 2 # hard clamp
 		if abs(vel.x) < 1:
@@ -84,10 +88,8 @@ func _physics_process(delta):
 	if left != right:
 		var dv = Vector2(-MAX_SPD*int(left) + MAX_SPD*int(right), 0)
 		if abs(dv.x) > abs(vel.x) && dv.x*vel.x >= 0:
-			print("adding to vel " + str(vel.x))
 			vel += dv
 		else:
-			print("not adding to vel " + str(vel.x))
 			var bounce = slide_with_bounce(dv)
 			vel += bounce[1]
 
@@ -101,7 +103,7 @@ func _physics_process(delta):
 	if (Input.is_action_just_released("dash") && dash_state == DashState.ChargingDash):
 		dash_state = DashState.Dash
 		$DashTimer.start(min(MAX_DASH, dash_charge * DASH_SCALE))
-		vel = get_local_mouse_position().normalized() * DASH_SPEED
+		vel = aim_vector() * DASH_SPEED
 
 	# Gravity time
 	var gravity = 0
@@ -129,7 +131,7 @@ func slide_with_bounce(vel):
 		if (collision.get_collider().has_method("bouncy")):
 			if collision.get_collider().bouncy(self, collision):
 				var s = -sign(vel.dot(collision.normal))
-				dv = (vel + Vector2(800, 800)) * collision.normal * s
+				dv = (vel + Vector2(400, 400)) * collision.normal * s
 	return [new_vel, dv]
 
 func grab_timeout():

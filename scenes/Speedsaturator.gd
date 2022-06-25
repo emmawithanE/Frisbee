@@ -15,4 +15,4 @@ func _speed_changed(id, s):
 	for i in speeds.values():
 		total_speed += i
 	print("speed changed to " + str(total_speed))
-	material.set_shader_param("amount", (total_speed) / (1000))
+	material.set_shader_param("amount", (total_speed) / (500))
