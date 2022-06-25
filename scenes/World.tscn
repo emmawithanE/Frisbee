@@ -16,9 +16,6 @@ position = Vector2( 194, 171 )
 position = Vector2( 328, 208 )
 colour = 2
 
-[node name="Camera2D" type="Camera2D" parent="Player"]
-current = true
-
 [node name="Targeter" type="Sprite" parent="."]
 texture = ExtResource( 4 )
 script = ExtResource( 2 )
