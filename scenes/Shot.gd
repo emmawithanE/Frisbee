@@ -30,3 +30,6 @@ func increase_speed():
 func die():
 	queue_free()
 	Signals.emit_signal("speed_changed", get_instance_id(), 0)
+
+func set_colour(frame):
+	$Sprite.set_frame(frame)

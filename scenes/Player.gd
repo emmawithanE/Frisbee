@@ -58,6 +58,7 @@ func _physics_process(delta):
 				shot_instance.colour = colour
 				shot_instance.position = $Pointing/End.global_position
 				shot_instance.rotation = $Pointing.rotation
+				shot_instance.set_colour(2)
 				get_parent().add_child(shot_instance)
 				# print("Shot fired.")
 				shooting_state = ShootingStates.Empty
