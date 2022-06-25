@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://scenes/Player.gd" type="Script" id=1]
-[ext_resource path="res://sprites/stickfig.png" type="Texture" id=2]
+[ext_resource path="res://sprites/players.png" type="Texture" id=2]
 [ext_resource path="res://sprites/RedLine.png" type="Texture" id=3]
 [ext_resource path="res://scenes/Shot.tscn" type="PackedScene" id=4]
 
@@ -17,6 +17,8 @@ bullet = ExtResource( 4 )
 
 [node name="Sprite" type="Sprite" parent="."]
 texture = ExtResource( 2 )
+hframes = 4
+vframes = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource( 1 )

@@ -1,6 +1,6 @@
 extends KinematicBody2D
 
-var colour = 2
+export var colour = 1
 
 var vel = Vector2()
 const MAX_SPD = 100
@@ -34,14 +34,17 @@ const DASH_SPEED = 400
 func _ready():
 	pass # Replace with function body.
 
+var last_aim = Vector2(1, 0)
 func aim_vector():
 	#var aim = Input.get_vector("aim_left", "aim_right", "aim_up", "aim_down")
 	var aim = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
-	return aim
+	if aim:
+		last_aim = aim
+	return last_aim
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _physics_process(delta):
-	$Pointing.look_at($Pointing.global_position + aim_vector())
+	$Pointing.set_rotation(aim_vector().angle())
 	
 	var pointdir = fposmod($Pointing.rotation_degrees, 360)
 	
@@ -55,10 +58,9 @@ func _physics_process(delta):
 			ShootingStates.Ready:
 				# print("Click!")
 				var shot_instance = bullet.instance()
-				shot_instance.colour = colour
+				shot_instance.set_colour(colour)
 				shot_instance.position = $Pointing/End.global_position
 				shot_instance.rotation = $Pointing.rotation
-				shot_instance.set_colour(2)
 				get_parent().add_child(shot_instance)
 				# print("Shot fired.")
 				shooting_state = ShootingStates.Empty
@@ -123,6 +125,21 @@ func _physics_process(delta):
 
 	var bounce = slide_with_bounce(vel)
 	vel = bounce[0] + bounce[1]
+	
+	
+	
+	# Fun with sprites
+	match dash_state:
+		DashState.ChargingDash:
+			$Sprite.set_frame_coords(Vector2(2, colour - 1))
+		DashState.Dash:
+			$Sprite.set_frame_coords(Vector2(3, colour - 1))
+			$Sprite.rotation = vel.angle() - PI/2
+		_:
+			if is_on_floor():
+				$Sprite.set_frame_coords(Vector2(0, colour - 1))
+			else:
+				$Sprite.set_frame_coords(Vector2(1, colour - 1))
 
 func slide_with_bounce(vel):
 	var dv = Vector2(0, 0)
@@ -152,6 +169,8 @@ func dash_timeout():
 	match dash_state:
 		DashState.Dash:
 			dash_state = DashState.NoDash
+			$Sprite.set_frame_coords(Vector2(1, colour - 1))
+			$Sprite.rotation = 0
 			$DashTimer.start(DASH_BACKSWING_LENGTH)
 			print("setting dash to backswing")
 		DashState.NoDash:
