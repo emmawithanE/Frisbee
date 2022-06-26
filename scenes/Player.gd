@@ -219,7 +219,12 @@ func _physics_process(delta):
 					vel = vel.bounce(coll.normal) * 0.2
 					end_dash()
 				else:
-					var dv = (vel*coll.normal).length()*coll.normal
+					var normal = coll.normal
+					if coll.normal.x && coll.normal.y:
+						normal.x = 0
+					var dv = (vel*normal).length()*normal
+					if dv != Vector2(0, -10):
+						print("dv " + str(dv))
 					vel += dv
 
 
