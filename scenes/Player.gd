@@ -2,6 +2,8 @@ extends KinematicBody2D
 
 export var colour = 1
 
+var dead = false
+
 var vel = Vector2()
 const MAX_SPD = 150
 const GRAV = 10
@@ -49,7 +51,7 @@ var UI_DASH = "dash"
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	respawn_pos = global_position
-	Signals.connect("kill_player", self, "refresh_disk")
+	Signals.connect("disk_kill", self, "refresh_disk")
 	if colour != 1:
 		UI_LEFT += "_p2"
 		UI_RIGHT += "_p2"
@@ -67,7 +69,7 @@ func aim_vector():
 		last_aim = aim
 	return last_aim
 
-func refresh_disk(player):
+func refresh_disk():
 	print("giving p " + str(colour) + " a disk")
 	shooting_state = ShootingStates.Ready
 
@@ -78,11 +80,13 @@ func set_shot_exception(shot):
 		shot.remove_collision_exception_with(self)
 
 func die():
+	dead = true
 	Signals.emit_signal("kill_player", self)
 
 func respawn():
 	global_position = respawn_pos
 	shooting_state = ShootingStates.Ready
+	dead = false
 	# invuln for a bit
 	set_collision_mask_bit(1, false)
 	set_collision_layer_bit(3, false)
@@ -294,4 +298,15 @@ func ball_collision(ball, _collision):
 	else:
 		die()
 		ball.die()
-	
+		Signals.emit_signal("disk_kill")
+
+func world_ball_collision(ball):
+	print("world ball collision")
+	if shooting_state == ShootingStates.Empty:
+		ball.die()
+		shooting_state = ShootingStates.Ready
+
+
+func left_screen():
+	if !dead:
+		die()

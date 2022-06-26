@@ -10,7 +10,7 @@ radius = 6.0
 
 [node name="Player" type="KinematicBody2D"]
 collision_layer = 12
-collision_mask = 7
+collision_mask = 23
 script = ExtResource( 1 )
 __meta__ = {
 "_edit_group_": true
@@ -43,5 +43,8 @@ one_shot = true
 [node name="DashTimer" type="Timer" parent="."]
 one_shot = true
 
+[node name="VisibilityNotifier2D" type="VisibilityNotifier2D" parent="."]
+
 [connection signal="timeout" from="GrabTimer" to="." method="grab_timeout"]
 [connection signal="timeout" from="DashTimer" to="." method="dash_timeout"]
+[connection signal="screen_exited" from="VisibilityNotifier2D" to="." method="left_screen"]

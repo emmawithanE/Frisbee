@@ -5,6 +5,7 @@ const MAX_SPEED = 800.0
 
 var vel = Vector2()
 var colour = 1
+var dead = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -19,9 +20,14 @@ func _physics_process(delta):
 		if (collision.get_collider().has_method("ball_collision")):
 			collision.get_collider().ball_collision(self, collision)
 			update_sprite()
+	
 
 func ball_collision(ball, coll):
 	set_vel(vel.bounce(coll.normal) + ball.vel)
+
+func left_screen():
+	if !dead:
+		Signals.emit_signal("ball_lost", self)
 
 func set_vel(v):
 	vel = v
@@ -42,6 +48,7 @@ func update_sprite():
 	$Sprite.set_frame_coords(new_col)
 
 func die():
+	dead = true
 	queue_free()
 	Signals.emit_signal("speed_changed", get_instance_id(), 0)
 
