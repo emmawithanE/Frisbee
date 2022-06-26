@@ -7,6 +7,7 @@ var green_area = 0
 var purple_area = 0
 var green_lives = 0
 var purple_lives = 0
+var running = true
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -25,8 +26,9 @@ func on_paint(ball, me, enemy):
 	print("paint area changed, green=" + str(green_area) + ", puple = " + str(purple_area))
 
 func on_tick():
-	green += green_area
-	purple += purple_area
+	if running:
+		green += green_area
+		purple += purple_area
 
 func on_kill(player):
 	if player.colour == 1:
@@ -35,6 +37,7 @@ func on_kill(player):
 		green += KILL_SCORE
 
 func on_win(player):
+	running = false
 	if player == 1:
 		print("green won")
 	else:
