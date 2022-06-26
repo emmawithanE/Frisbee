@@ -11,7 +11,6 @@ func _ready():
 	# print("Bullet ready function.")
 	vel = Vector2(MIN_SPEED ,0).rotated(rotation)
 	Signals.emit_signal("speed_changed", get_instance_id(), MIN_SPEED)
-	pass
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _physics_process(delta):
@@ -41,7 +40,6 @@ func update_sprite():
 	var new_col = Vector2(colour, int(vel.length() > MAX_SPEED * 0.9))
 	print(str(new_col))
 	$Sprite.set_frame_coords(new_col)
-	look_at(global_position + vel)
 
 func die():
 	queue_free()

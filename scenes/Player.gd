@@ -289,4 +289,5 @@ func ball_collision(ball, _collision):
 		ball.update_sprite()
 	else:
 		die()
+		ball.die()
 	
