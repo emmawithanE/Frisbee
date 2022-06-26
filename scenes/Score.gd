@@ -34,6 +34,9 @@ func on_tick():
 		green += green_area
 		purple += purple_area
 
+	$GreenScore.set_text(str(int(green * DISPLAY_SCALE)))
+	$PurpleScore.set_text(str(int(purple * DISPLAY_SCALE)))
+
 func on_kill(player):
 	if player.colour == 1:
 		purple += KILL_SCORE
