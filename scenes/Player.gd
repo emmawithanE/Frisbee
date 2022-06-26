@@ -74,7 +74,7 @@ func aim_vector():
 	if !running:
 		return last_aim
 	if len(Input.get_connected_joypads()) == 1 && colour == 2:
-		last_aim = get_local_mouse_position()
+		last_aim = get_local_mouse_position().normalized()
 	else:
 		var aim = Input.get_vector(UI_LEFT, UI_RIGHT, UI_UP, UI_DOWN)
 		if aim:
