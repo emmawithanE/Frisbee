@@ -1,6 +1,6 @@
 extends Node2D
 
-const KILL_SCORE = 10000
+const KILL_SCORE = 5000
 var green = 0
 var purple = 0
 var green_area = 0
