@@ -49,7 +49,7 @@ var UI_DASH = "dash"
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	respawn_pos = global_position
-
+	Signals.connect("kill_player", self, "refresh_disk")
 	if colour != 1:
 		UI_LEFT += "_p2"
 		UI_RIGHT += "_p2"
@@ -66,6 +66,10 @@ func aim_vector():
 	if aim:
 		last_aim = aim
 	return last_aim
+
+func refresh_disk(player):
+	print("giving p " + str(colour) + " a disk")
+	shooting_state = ShootingStates.Ready
 
 func set_shot_exception(shot):
 	shot.add_collision_exception_with(self)
