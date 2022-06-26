@@ -33,7 +33,7 @@ func increase_speed():
 	var v = vel.length()
 	var new_v = min(MAX_SPEED, v + sqrt(v))
 	set_vel(vel.normalized() * new_v)
-	
+
 func add_vel(v):
 	set_vel(vel + v)
 

@@ -145,6 +145,12 @@ jump_p2={
  ]
 }
 
+[layer_names]
+
+2d_physics/layer_1="wall"
+2d_physics/layer_2="ball"
+2d_physics/layer_3="player"
+
 [rendering]
 
 quality/intended_usage/framebuffer_allocation=0

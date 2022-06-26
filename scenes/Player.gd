@@ -33,6 +33,8 @@ const DASH_SPEED = 1000
 var on_floor = false
 var bounced = false
 
+var respawn_pos = Vector2(0, 0)
+
 var UI_LEFT = "ui_left"
 var UI_RIGHT = "ui_right"
 var UI_UP = "ui_up"
@@ -43,6 +45,8 @@ var UI_DASH = "dash"
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	respawn_pos = global_position
+
 	if colour != 1:
 		UI_LEFT += "_p2"
 		UI_RIGHT += "_p2"
@@ -65,15 +69,22 @@ func set_shot_exception(shot):
 	yield(get_tree().create_timer(0.5), "timeout")
 	if is_instance_valid(shot):
 		shot.remove_collision_exception_with(self)
-	
+
+func die():
+	Signals.emit_signal("kill_player", self)
+
+func respawn():
+	global_position = respawn_pos
+	shooting_state = ShootingStates.Ready
+	#set_collision_mask_bit(1, false)
+	#set_collision_layer_bit(4, false)
+
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _physics_process(delta):
 	
 	# Fun with sprites
 	var point = aim_vector().angle()
-	print(float(point / PI))
 	if point > PI/2 || point < -PI/2:
-		print("flipping h, set rotation at angle " + str((PI - point)/PI))
 		$Sprite.flip_h = true
 		$Pointing.flip_h = true
 		$Pointing.set_rotation(point - PI)
@@ -248,8 +259,10 @@ func ball_collision(ball, _collision):
 		ball.die()
 		shooting_state = ShootingStates.Ready
 		$GrabTimer.stop()
-		return
-	if dash_state == DashState.Dash:
+	elif dash_state == DashState.Dash:
 		ball.add_vel(vel * 0.6)
 		ball.colour = colour
 		ball.update_sprite()
+	else:
+		die()
+	
