@@ -6,3 +6,4 @@ signal kill_player(player)
 signal ball_lost(ball)
 signal disk_kill
 signal win(player)
+signal lives_changed(green, purple)

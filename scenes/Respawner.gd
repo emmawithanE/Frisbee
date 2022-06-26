@@ -10,6 +10,7 @@ export (PackedScene) var world_ball
 func _ready():
 	Signals.connect("kill_player", self, "kill_player")
 	Signals.connect("ball_lost", self, "ball_oob")
+	Signals.emit_signal("lives_changed", LIVES-green_deaths, LIVES-purple_deaths)
 
 func kill_player(player):
 	if player.colour == 1:
@@ -24,6 +25,7 @@ func kill_player(player):
 			print("purple ool")
 			Signals.emit_signal("win", 1)
 			return
+	Signals.emit_signal("lives_changed", LIVES-green_deaths, LIVES-purple_deaths)
 
 	var parent = player.get_parent()
 	parent.remove_child(player)

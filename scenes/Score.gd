@@ -5,12 +5,15 @@ var green = 0
 var purple = 0
 var green_area = 0
 var purple_area = 0
+var green_lives = 0
+var purple_lives = 0
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	Signals.connect("paint_area_changed", self, "on_paint")
 	Signals.connect("kill_player", self, "on_kill")
 	Signals.connect("win", self, "on_win")
+	Signals.connect("lives_changed", self, "lives_changed")
 
 func on_paint(ball, me, enemy):
 	if ball == 1:
@@ -36,3 +39,8 @@ func on_win(player):
 		print("green won")
 	else:
 		print("purple won")
+
+func lives_changed(green, purple):
+	green_lives = green
+	purple_lives = purple
+	print("green lives " + str(green_lives) + " purple " + str(purple_lives))
