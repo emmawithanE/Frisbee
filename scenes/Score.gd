@@ -55,6 +55,16 @@ func on_win(player):
 		print("green won")
 	else:
 		print("purple won")
+	
+	if green > purple:
+		$YouWon.add_color_override("font_color", Color(0,1,0))
+		$YouWon.set_text("GREEN WINS")
+	elif purple > green:
+		$YouWon.add_color_override("font_color", Color(0.5,0,1))
+		$YouWon.set_text("PURPLE WINS")
+	else:
+		$YouWon.set_text("IT'S A TIE (SOMEHOW?)")
+	$Restart.set_visible(true)
 
 func lives_changed(green, purple):
 	green_lives = green
