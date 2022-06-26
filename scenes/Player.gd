@@ -35,6 +35,8 @@ var bounced = false
 var has_jump = false
 
 var respawn_pos = Vector2(0, 0)
+var flicker_count = 0
+var FLICKER_LENGTH = 15
 
 var UI_LEFT = "ui_left"
 var UI_RIGHT = "ui_right"
@@ -77,8 +79,23 @@ func die():
 func respawn():
 	global_position = respawn_pos
 	shooting_state = ShootingStates.Ready
-	#set_collision_mask_bit(1, false)
-	#set_collision_layer_bit(4, false)
+	# invuln for a bit
+	set_collision_mask_bit(1, false)
+	set_collision_layer_bit(3, false)
+	flicker_count = 0
+	var timer = Timer.new()
+	add_child(timer)
+	timer.connect("timeout", self, "flicker", [timer])
+	timer.start(0.1)
+
+func flicker(timer):
+	flicker_count += 1
+	visible = !visible
+	if flicker_count == FLICKER_LENGTH:
+		visible = true
+		set_collision_mask_bit(1, true)
+		set_collision_layer_bit(3, true)
+		timer.queue_free()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _physics_process(delta):
