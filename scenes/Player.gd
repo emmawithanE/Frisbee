@@ -53,6 +53,7 @@ var UI_QUIT = "ui_quit"
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	respawn_pos = global_position
+	respawn()
 	Signals.connect("disk_kill", self, "refresh_disk")
 	Signals.connect("win", self, "game_ended")
 	if colour != 1:
