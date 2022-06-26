@@ -32,6 +32,7 @@ const DASH_SPEED = 1000
 
 var on_floor = false
 var bounced = false
+var has_jump = false
 
 var respawn_pos = Vector2(0, 0)
 
@@ -154,9 +155,10 @@ func _physics_process(delta):
 	if bounced:
 		vel.y -= vel.y*vel.y*sign(vel.y)*0.01*delta
 	# jumping
-	if on_floor:
+	if has_jump:
 		if Input.is_action_just_pressed(UI_JUMP):
 			vel.y = -JUMP
+			has_jump = false
 	
 	# movement
 	var left = Input.is_action_pressed(UI_LEFT)
@@ -201,6 +203,7 @@ func _physics_process(delta):
 			if coll.normal.y < 0:
 				on_floor = true
 				bounced = false
+				has_jump = true
 				if dash_state == DashState.NoDash:
 					dash_state = DashState.Ready
 
@@ -220,11 +223,10 @@ func _physics_process(delta):
 					end_dash()
 				else:
 					var normal = coll.normal
+					# don't bounce off slopes
 					if coll.normal.x && coll.normal.y:
 						normal.x = 0
 					var dv = (vel*normal).length()*normal
-					if dv != Vector2(0, -10):
-						print("dv " + str(dv))
 					vel += dv
 
 
