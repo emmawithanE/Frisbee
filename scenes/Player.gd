@@ -50,6 +50,7 @@ var UI_JUMP = "jump"
 var UI_DASH = "dash"
 var UI_RESTART = "ui_restart"
 var UI_QUIT = "ui_quit"
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	respawn_pos = global_position
@@ -72,9 +73,12 @@ func aim_vector():
 	#var aim = Input.get_vector("aim_left", "aim_right", "aim_up", "aim_down")
 	if !running:
 		return last_aim
-	var aim = Input.get_vector(UI_LEFT, UI_RIGHT, UI_UP, UI_DOWN)
-	if aim:
-		last_aim = aim
+	if len(Input.get_connected_joypads()) == 1 && colour == 2:
+		last_aim = get_local_mouse_position()
+	else:
+		var aim = Input.get_vector(UI_LEFT, UI_RIGHT, UI_UP, UI_DOWN)
+		if aim:
+			last_aim = aim
 	return last_aim
 
 func game_ended(p):
