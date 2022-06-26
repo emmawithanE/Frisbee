@@ -7,3 +7,5 @@ signal ball_lost(ball)
 signal disk_kill
 signal win(player)
 signal lives_changed(green, purple)
+signal restart_game
+signal quit_game

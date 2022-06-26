@@ -48,7 +48,8 @@ var UI_DOWN = "ui_down"
 var UI_CLICK = "click"
 var UI_JUMP = "jump"
 var UI_DASH = "dash"
-
+var UI_RESTART = "ui_restart"
+var UI_QUIT = "ui_quit"
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	respawn_pos = global_position
@@ -62,6 +63,8 @@ func _ready():
 		UI_CLICK += "_p2"
 		UI_JUMP += "_p2"
 		UI_DASH += "_p2"
+		UI_RESTART += "_p2"
+		UI_QUIT += "_p2"
 
 var last_aim = Vector2(1, 0)
 func aim_vector():
@@ -116,7 +119,12 @@ func flicker(timer):
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _physics_process(delta):
-	
+	if !running:
+		if Input.is_action_just_pressed(UI_RESTART):
+			Signals.emit_signal("restart_game")
+		elif Input.is_action_just_pressed(UI_QUIT):
+			Signals.emit_signal("quit_game")
+
 	# Fun with sprites
 	var point = aim_vector().angle()
 	if point > PI/2 || point < -PI/2:
