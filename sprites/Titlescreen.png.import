@@ -2,11 +2,16 @@
 
 importer="texture"
 type="StreamTexture"
-valid=false
+path="res://.import/Titlescreen.png-9619bef345f799ceb57817f854cceedb.stex"
+metadata={
+"vram_texture": false
+}
 
 [deps]
 
-source_file="res://sprites/playerheads.png"
+source_file="res://sprites/Titlescreen.png"
+dest_files=[ "res://.import/Titlescreen.png-9619bef345f799ceb57817f854cceedb.stex" ]
+
 [params]
 
 compress/mode=0
