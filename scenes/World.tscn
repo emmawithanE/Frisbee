@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://scenes/Player.tscn" type="PackedScene" id=1]
 [ext_resource path="res://scenes/Targeter.gd" type="Script" id=2]
@@ -46,7 +46,6 @@ margin_right = 60.0
 margin_bottom = 470.0
 custom_colors/font_color = Color( 0, 1, 0, 1 )
 custom_fonts/font = SubResource( 1 )
-align = 2
 
 [node name="PurpleScore" type="Label" parent="Score"]
 margin_left = 740.0
@@ -55,6 +54,7 @@ margin_right = 780.0
 margin_bottom = 470.0
 custom_colors/font_color = Color( 0.498039, 0, 1, 1 )
 custom_fonts/font = SubResource( 2 )
+align = 2
 
 [node name="Respawner" parent="." instance=ExtResource( 7 )]
 ball_respawn_pos = Vector2( 400, 120 )
