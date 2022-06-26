@@ -3,6 +3,7 @@ extends KinematicBody2D
 export var colour = 1
 
 var dead = false
+var running = true
 
 var vel = Vector2()
 const MAX_SPD = 150
@@ -52,6 +53,7 @@ var UI_DASH = "dash"
 func _ready():
 	respawn_pos = global_position
 	Signals.connect("disk_kill", self, "refresh_disk")
+	Signals.connect("win", self, "game_ended")
 	if colour != 1:
 		UI_LEFT += "_p2"
 		UI_RIGHT += "_p2"
@@ -64,10 +66,15 @@ func _ready():
 var last_aim = Vector2(1, 0)
 func aim_vector():
 	#var aim = Input.get_vector("aim_left", "aim_right", "aim_up", "aim_down")
+	if !running:
+		return last_aim
 	var aim = Input.get_vector(UI_LEFT, UI_RIGHT, UI_UP, UI_DOWN)
 	if aim:
 		last_aim = aim
 	return last_aim
+
+func game_ended(p):
+	running = false
 
 func refresh_disk():
 	print("giving p " + str(colour) + " a disk")
@@ -82,6 +89,8 @@ func set_shot_exception(shot):
 func die():
 	dead = true
 	Signals.emit_signal("kill_player", self)
+	$DashTimer.stop()
+	$GrabTimer.stop()
 
 func respawn():
 	global_position = respawn_pos
@@ -145,7 +154,7 @@ func _physics_process(delta):
 				$Sprite.set_frame_coords(Vector2(1, colour - 1))
 
 	# Throw or catch a ball
-	if Input.is_action_just_pressed(UI_CLICK):
+	if running && Input.is_action_just_pressed(UI_CLICK):
 		match shooting_state:
 			ShootingStates.Ready:
 				# print("Click!")
@@ -181,13 +190,13 @@ func _physics_process(delta):
 		vel.y -= vel.y*vel.y*sign(vel.y)*0.01*delta
 	# jumping
 	if has_jump:
-		if Input.is_action_just_pressed(UI_JUMP):
+		if running && Input.is_action_just_pressed(UI_JUMP):
 			vel.y = -JUMP
 			has_jump = false
 	
 	# movement
-	var left = Input.is_action_pressed(UI_LEFT)
-	var right = Input.is_action_pressed(UI_RIGHT)
+	var left = running && Input.is_action_pressed(UI_LEFT)
+	var right = running && Input.is_action_pressed(UI_RIGHT)
 	if left != right:
 		if dash_state != DashState.ChargingDash:
 			var dx = -MAX_SPD*int(left) + MAX_SPD*int(right)
@@ -200,14 +209,14 @@ func _physics_process(delta):
 	
 	match dash_state:
 		DashState.Ready:
-			if Input.is_action_just_pressed(UI_DASH):
+			if running && Input.is_action_just_pressed(UI_DASH):
 				dash_state = DashState.ChargingDash
 				dash_charge = 0
 				vel = Vector2(0, 0)
 		DashState.ChargingDash:
 			vel.y = CHARGING_FALL_RATE
 			dash_charge += delta
-			if Input.is_action_just_released(UI_DASH):
+			if running && Input.is_action_just_released(UI_DASH):
 				dash_state = DashState.Dash
 				$DashTimer.start(min(MAX_DASH, dash_charge * DASH_SCALE))
 				vel = aim_vector() * DASH_SPEED

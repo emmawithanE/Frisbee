@@ -13,6 +13,9 @@ func _ready():
 	Signals.emit_signal("lives_changed", LIVES-green_deaths, LIVES-purple_deaths)
 
 func kill_player(player):
+	var parent = player.get_parent()
+	parent.remove_child(player)
+	
 	if player.colour == 1:
 		green_deaths += 1
 		if green_deaths == LIVES:
@@ -27,8 +30,7 @@ func kill_player(player):
 			return
 	Signals.emit_signal("lives_changed", LIVES-green_deaths, LIVES-purple_deaths)
 
-	var parent = player.get_parent()
-	parent.remove_child(player)
+
 	yield(get_tree().create_timer(RESPAWN_TIME), "timeout")
 	parent.add_child(player)
 	player.respawn()
