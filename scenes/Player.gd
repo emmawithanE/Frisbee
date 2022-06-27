@@ -288,7 +288,8 @@ func grab_timeout():
 			print("setting ss to empty")
 			shooting_state = ShootingStates.Empty
 		_:
-			assert(false, "shooting state=" + str(shooting_state) + " when timer ended")
+			pass
+			#assert(false, "shooting state=" + str(shooting_state) + " when timer ended")
 
 func end_dash():
 	$DashTimer.stop()
