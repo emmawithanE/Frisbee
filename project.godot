@@ -26,7 +26,7 @@ Signals="*res://scripts/signals.gd"
 
 [display]
 
-window/size/width=800
+window/size/width=960
 window/size/height=480
 window/size/test_width=1600
 window/size/test_height=960

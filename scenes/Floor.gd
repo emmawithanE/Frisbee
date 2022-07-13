@@ -10,7 +10,7 @@ func ball_collision(ball, collision):
 	ball.vel = ball.vel.bounce(collision.get_normal())
 	ball.increase_speed()
 
-	var cell = collision.get_collider().world_to_map(collision.get_position() - collision.get_normal())
+	var cell = collision.get_collider().world_to_map(collision.get_position() - collision.get_normal() - Vector2(80,0))
 
 	var me = 0
 	var enemy = 0
@@ -33,7 +33,7 @@ func ball_collision(ball, collision):
 	Signals.emit_signal("paint_area_changed", ball.colour, me, enemy)
 
 func bouncy(obj, collision):
-	var cell = collision.get_collider().world_to_map(collision.get_position() - collision.get_normal())
+	var cell = collision.get_collider().world_to_map(collision.get_position() - collision.get_normal() - Vector2(80,0))
 	var cell_type = get_cellv(cell)
 	if cell_type != INVALID_CELL && cell_type != DEFAULT_COLOUR:
 		return true
